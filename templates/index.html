@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ROI Predictor — Pakistan Property Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #080c12;
+  --bg2:      #0d1520;
+  --bg3:      #101d2e;
+  --border:   #162438;
+  --cyan:     #00d4ff;
+  --green:    #00ff99;
+  --gold:     #ffd700;
+  --orange:   #ff8c42;
+  --red:      #ff4d4d;
+  --text:     #cce4ff;
+  --muted:    #4a7090;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 300px;
+  height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 1.2rem 1.2rem 2rem 1.2rem;
+  position: fixed;
+  top: 0; left: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  z-index: 100;
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.logo-icon { font-size: 2.5rem; display: block; margin-bottom: 0.4rem; }
+.logo-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, var(--cyan), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.logo-sub { color: var(--muted); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.2rem; }
+
+.form-section {
+  margin-bottom: 1rem;
+}
+.form-section-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--cyan);
+  margin-bottom: 0.8rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--cyan);
+}
+
+.form-group { margin-bottom: 0.9rem; }
+.form-group label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+}
+.form-group select,
+.form-group input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group select:focus,
+.form-group input:focus { border-color: var(--cyan); }
+.form-group select option { background: var(--bg2); }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+
+.sqft-hint { color: var(--muted); font-size: 0.7rem; margin-top: 0.2rem; }
+
+.predict-btn {
+  width: 100%;
+  padding: 0.9rem;
+  background: linear-gradient(135deg, #0055cc, #0099ff);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 20px rgba(0,120,255,0.3);
+}
+.predict-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,120,255,0.45); }
+.predict-btn:active { transform: translateY(0); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: 300px;
+  flex: 1;
+  padding: 2.5rem 2rem;
+  height: 100vh;
+}
+
+/* ── HERO ── */
+.hero { margin-bottom: 2.5rem; }
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--cyan) 0%, #0099ff 50%, var(--green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero p { color: var(--muted); font-size: 0.95rem; margin-top: 0.4rem; font-weight: 300; }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 0.4rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: var(--border);
+}
+.empty-state .big-icon { font-size: 5rem; margin-bottom: 1rem; opacity: 0.3; }
+.empty-state h2 { font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 0.08em; color: #1e3a5f; }
+.empty-state p { color: #162438; font-size: 0.9rem; margin-top: 0.4rem; }
+
+/* ── METRIC CARDS ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 1rem; }
+.metric-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.2rem 1rem;
+  text-align: center;
+  transition: transform 0.2s, border-color 0.2s;
+  animation: fadeUp 0.4s ease both;
+}
+.metric-card:hover { transform: translateY(-3px); border-color: #1e4060; }
+.metric-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+.metric-value { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.04em; line-height: 1; }
+.metric-badge {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── VERDICTS ── */
+.verdicts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.verdict-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  animation: fadeUp 0.5s ease both;
+}
+.verdict-title { font-family: var(--font-display); font-size: 1.1rem; letter-spacing: 0.06em; margin-bottom: 0.4rem; color: var(--text); }
+.verdict-body { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+.verdict-body strong { color: var(--text); }
+
+/* ── SECTION TITLE ── */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  color: var(--cyan);
+  margin-bottom: 1rem;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--cyan);
+}
+
+/* ── GAUGES ── */
+.gauges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+.gauge-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.2rem;
+  text-align: center;
+  animation: fadeUp 0.6s ease both;
+}
+.gauge-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; }
+.gauge-wrap { position: relative; width: 140px; height: 70px; margin: 0 auto; }
+.gauge-svg { width: 140px; height: 80px; }
+.gauge-num {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+  margin-top: 0.3rem;
+}
+
+/* ── BREAKEVEN ── */
+.breakeven-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+.breakeven-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+  animation: fadeUp 0.7s ease both;
+}
+.breakeven-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+.breakeven-value { font-family: var(--font-display); font-size: 1.4rem; color: var(--gold); }
+
+/* ── COMPARE ── */
+.compare-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 1rem; }
+.compare-table th { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid var(--border); }
+.compare-table td { padding: 0.7rem 0.8rem; border-bottom: 1px solid #0d1a27; color: var(--text); }
+.compare-table tr:hover td { background: var(--bg3); }
+
+.add-btn {
+  padding: 0.6rem 1.4rem;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid var(--cyan);
+  border-radius: 8px;
+  color: var(--cyan);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+.add-btn:hover { background: rgba(0,212,255,0.2); }
+
+.clear-btn {
+  padding: 0.6rem 1.4rem;
+  background: rgba(255,77,77,0.1);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  color: var(--red);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 0.5rem;
+}
+.clear-btn:hover { background: rgba(255,77,77,0.2); }
+
+/* ── SHAP CHARTS ── */
+.shap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem; }
+.shap-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.2rem;
+}
+.shap-card-title { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+.shap-bar-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.shap-bar-label { font-size: 0.75rem; color: var(--muted); width: 140px; flex-shrink: 0; text-align: right; }
+.shap-bar-track { flex: 1; height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+.shap-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+.shap-bar-val { font-size: 0.72rem; color: var(--muted); width: 45px; flex-shrink: 0; }
+
+/* ── LOADING ── */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(8,12,18,0.85);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+.loading-overlay.show { display: flex; }
+.spinner {
+  width: 48px; height: 48px;
+  border: 3px solid var(--border);
+  border-top-color: var(--cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading-text { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 2rem; right: 2rem;
+  background: var(--bg2);
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  padding: 0.8rem 1.2rem;
+  color: var(--green);
+  font-size: 0.85rem;
+  z-index: 9999;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ── LOADING ── -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Analyzing Property...</div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast">✅ Added to comparison!</div>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="logo">
+    <span class="logo-icon">🏠</span>
+    <div class="logo-title">ROI Predictor</div>
+    <div class="logo-sub">Pakistan Property Intelligence</div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">📍 Location</div>
+    <div class="form-group">
+      <label>City</label>
+      <select id="city">
+        {% for c in cities %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Province</label>
+      <select id="province">
+        {% for p in provinces %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="row2">
+      <div class="form-group">
+        <label>Latitude</label>
+        <input type="number" id="latitude" value="31.5204" step="0.0001"/>
+      </div>
+      <div class="form-group">
+        <label>Longitude</label>
+        <input type="number" id="longitude" value="74.3587" step="0.0001"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">🏗️ Property</div>
+    <div class="form-group">
+      <label>Property Type</label>
+      <select id="prop_type">
+        {% for t in prop_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Area (Marla)</label>
+      <input type="number" id="area_marla" value="10" min="1" max="500" step="0.5" oninput="updateSqft()"/>
+      <div class="sqft-hint" id="sqft_hint">≈ 2,722 sq ft</div>
+    </div>
+    <div class="row2">
+      <div class="form-group">
+        <label>Bedrooms</label>
+        <input type="number" id="bedrooms" value="3" min="1" max="15"/>
+      </div>
+      <div class="form-group">
+        <label>Bathrooms</label>
+        <input type="number" id="baths" value="2" min="1" max="15"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">💰 Financials</div>
+    <div class="form-group">
+      <label>Purchase Price (PKR)</label>
+      <input type="number" id="price" value="15000000" min="100000" step="500000" oninput="updatePriceHint()"/>
+      <div class="sqft-hint" id="price_hint">≈ PKR 15.0M</div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">📅 Listing Info</div>
+    <div class="row2">
+      <div class="form-group">
+        <label>Month</label>
+        <select id="month">
+          <option value="1">January</option><option value="2">February</option>
+          <option value="3">March</option><option value="4">April</option>
+          <option value="5">May</option><option value="6">June</option>
+          <option value="7" selected>July</option><option value="8">August</option>
+          <option value="9">September</option><option value="10">October</option>
+          <option value="11">November</option><option value="12">December</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Year</label>
+        <select id="year">
+          <option value="2023">2023</option><option value="2024">2024</option>
+          <option value="2025" selected>2025</option><option value="2026">2026</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="predict-btn" onclick="predict()">🔍 PREDICT ROI & YIELD</button>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="hero">
+    <h1>Rental Yield &amp; ROI Predictor</h1>
+    <p>AI-powered property investment intelligence for Pakistan real estate</p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('prediction', this)">📊 Prediction</button>
+    <button class="tab-btn" onclick="switchTab('explainability', this)">🔍 Explainability</button>
+    <button class="tab-btn" onclick="switchTab('comparison', this)">📈 Compare Properties</button>
+  </div>
+
+  <!-- TAB: PREDICTION -->
+  <div class="tab-panel active" id="tab-prediction">
+    <div id="empty-state" class="empty-state">
+      <div class="big-icon">🏠</div>
+      <h2>Fill in property details and predict</h2>
+      <p>Use the sidebar to enter location, size, and price then click Predict</p>
+    </div>
+    <div id="results" style="display:none;">
+      <!-- Metric Cards -->
+      <div class="section-title">📊 Prediction Results</div>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Gross Rental Yield</div>
+          <div class="metric-value" id="r-gross" style="color:var(--cyan)">—</div>
+          <div class="metric-badge" id="b-gross">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Net Rental Yield</div>
+          <div class="metric-value" id="r-net" style="color:var(--green)">—</div>
+          <div class="metric-badge" id="b-net">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">ROI %</div>
+          <div class="metric-value" id="r-roi" style="color:var(--gold)">—</div>
+          <div class="metric-badge" id="b-roi">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Est. Monthly Rent</div>
+          <div class="metric-value" id="r-monthly" style="color:var(--orange)">—</div>
+          <div class="metric-badge" style="color:var(--muted)">per month</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Est. Annual Rent</div>
+          <div class="metric-value" id="r-annual" style="color:var(--orange)">—</div>
+          <div class="metric-badge" style="color:var(--muted)">per year</div>
+        </div>
+      </div>
+
+      <!-- Verdicts -->
+      <div class="verdicts">
+        <div class="verdict-card" id="verdict-yield">
+          <div class="verdict-title">🏠 Rental Income Verdict</div>
+          <div class="verdict-body" id="verdict-yield-body">—</div>
+        </div>
+        <div class="verdict-card" id="verdict-roi">
+          <div class="verdict-title">📈 ROI Verdict</div>
+          <div class="verdict-body" id="verdict-roi-body">—</div>
+        </div>
+      </div>
+
+      <!-- Gauges -->
+      <div class="section-title">📉 Visual Gauges</div>
+      <div class="gauges-grid">
+        <div class="gauge-card">
+          <div class="gauge-label">Gross Yield</div>
+          <svg class="gauge-svg" viewBox="0 0 140 80">
+            <path d="M10,75 A60,60 0 0,1 130,75" fill="none" stroke="#1a2f45" stroke-width="10" stroke-linecap="round"/>
+            <path id="gauge-gross-arc" d="M10,75 A60,60 0 0,1 130,75" fill="none" stroke="var(--cyan)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 188"/>
+          </svg>
+          <div class="gauge-num" id="gauge-gross-num" style="color:var(--cyan)">—</div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-label">Net Yield</div>
+          <svg class="gauge-svg" viewBox="0 0 140 80">
+            <path d="M10,75 A60,60 0 0,1 130,75" fill="none" stroke="#1a2f45" stroke-width="10" stroke-linecap="round"/>
+            <path id="gauge-net-arc" d="M10,75 A60,60 0 0,1 130,75" fill="none" stroke="var(--green)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 188"/>
+          </svg>
+          <div class="gauge-num" id="gauge-net-num" style="color:var(--green)">—</div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-label">ROI %</div>
+          <svg class="gauge-svg" viewBox="0 0 140 80">
+            <path d="M10,75 A60,60 0 0,1 130,75" fill="none" stroke="#1a2f45" stroke-width="10" stroke-linecap="round"/>
+            <path id="gauge-roi-arc" d="M10,75 A60,60 0 0,1 130,75" fill="none" stroke="var(--gold)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 188"/>
+          </svg>
+          <div class="gauge-num" id="gauge-roi-num" style="color:var(--gold)">—</div>
+        </div>
+      </div>
+
+      <!-- Breakeven -->
+      <div class="section-title">⏱️ Breakeven & Income Projection</div>
+      <div class="breakeven-grid">
+        <div class="breakeven-card">
+          <div class="breakeven-label">Breakeven (Rent Only)</div>
+          <div class="breakeven-value" id="r-breakeven">—</div>
+        </div>
+        <div class="breakeven-card">
+          <div class="breakeven-label">5-Year Rental Income</div>
+          <div class="breakeven-value" id="r-five">—</div>
+        </div>
+        <div class="breakeven-card">
+          <div class="breakeven-label">10-Year Rental Income</div>
+          <div class="breakeven-value" id="r-ten">—</div>
+        </div>
+      </div>
+
+      <button class="add-btn" onclick="addToComparison()">➕ Add to Comparison</button>
+    </div>
+  </div>
+
+  <!-- TAB: EXPLAINABILITY -->
+  <div class="tab-panel" id="tab-explainability">
+    <div class="section-title">🔍 What Drives Rental Yield & ROI?</div>
+    <div class="shap-grid">
+      <div class="shap-card">
+        <div class="shap-card-title">Top Feature Importance (SHAP)</div>
+        <div id="shap-bars">
+          {% set max_imp = top_features[0][1] %}
+          {% for feat, imp in top_features %}
+          <div class="shap-bar-row">
+            <div class="shap-bar-label">{{ feat.replace('_encoded','').replace('_',' ') }}</div>
+            <div class="shap-bar-track">
+              <div class="shap-bar-fill" style="width:{{ (imp/max_imp*100)|round }}%; background: linear-gradient(90deg, #0055cc, #00d4ff);"></div>
+            </div>
+            <div class="shap-bar-val">{{ "%.3f"|format(imp) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="shap-card">
+        <div class="shap-card-title">Key Insights</div>
+        <div style="display:flex; flex-direction:column; gap:0.8rem; margin-top:0.5rem;">
+          <div style="background:var(--bg3); border-radius:8px; padding:0.8rem;">
+            <div style="font-size:0.72rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem;">🗺️ Location is King</div>
+            <div style="font-size:0.82rem; color:var(--muted); line-height:1.5;">Latitude & location score are top drivers — where a property is located dominates all other factors.</div>
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:0.8rem;">
+            <div style="font-size:0.72rem; color:var(--green); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem;">🏗️ Property Type Matters</div>
+            <div style="font-size:0.82rem; color:var(--muted); line-height:1.5;">Flats & upper portions yield more than farmhouses. Type is the #2 most impactful feature.</div>
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:0.8rem;">
+            <div style="font-size:0.72rem; color:var(--gold); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem;">📐 Size vs Yield</div>
+            <div style="font-size:0.82rem; color:var(--muted); line-height:1.5;">Smaller properties tend to yield higher percentage returns relative to purchase price.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: COMPARISON -->
+  <div class="tab-panel" id="tab-comparison">
+    <div class="section-title">📈 Property Comparison</div>
+    <div id="compare-empty" style="text-align:center; padding:3rem; color:var(--muted);">
+      <div style="font-size:2rem; margin-bottom:0.5rem;">📊</div>
+      <div>No properties added yet — predict a property and click "Add to Comparison"</div>
+    </div>
+    <div id="compare-content" style="display:none;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Price (PKR)</th>
+            <th>Gross Yield</th>
+            <th>Net Yield</th>
+            <th>ROI %</th>
+            <th>Monthly Rent</th>
+          </tr>
+        </thead>
+        <tbody id="compare-tbody"></tbody>
+      </table>
+      <div style="margin-top:1rem;">
+        <canvas id="compareChart" height="120"></canvas>
+      </div>
+      <button class="clear-btn" onclick="clearComparison()" style="margin-top:1rem;">🗑️ Clear All</button>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── STATE ──
+let lastResult = null;
+let comparisons = [];
+let compareChart = null;
+
+// ── HELPERS ──
+function updateSqft() {
+  const m = parseFloat(document.getElementById('area_marla').value) || 0;
+  document.getElementById('sqft_hint').textContent = `≈ ${(m * 272.25).toLocaleString('en-PK', {maximumFractionDigits:0})} sq ft`;
+}
+function updatePriceHint() {
+  const p = parseFloat(document.getElementById('price').value) || 0;
+  document.getElementById('price_hint').textContent = `≈ PKR ${(p/1000000).toFixed(1)}M`;
+}
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function setGauge(id, val, max) {
+  const arc = document.getElementById(id);
+  const pct = Math.min(val / max, 1);
+  const total = 188;
+  arc.setAttribute('stroke-dasharray', `${pct * total} ${total}`);
+}
+function fmt(n) { return 'PKR ' + Math.round(n).toLocaleString('en-PK'); }
+
+// ── PREDICT ──
+async function predict() {
+  document.getElementById('loadingOverlay').classList.add('show');
+  const data = {
+    city:       document.getElementById('city').value,
+    province:   document.getElementById('province').value,
+    latitude:   document.getElementById('latitude').value,
+    longitude:  document.getElementById('longitude').value,
+    prop_type:  document.getElementById('prop_type').value,
+    area_marla: document.getElementById('area_marla').value,
+    bedrooms:   document.getElementById('bedrooms').value,
+    baths:      document.getElementById('baths').value,
+    price:      document.getElementById('price').value,
+    month:      document.getElementById('month').value,
+    year:       document.getElementById('year').value,
+  };
+
+  try {
+    const res  = await fetch('/predict', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+    const json = await res.json();
+    document.getElementById('loadingOverlay').classList.remove('show');
+
+    if (!json.success) { alert('Error: ' + json.error); return; }
+
+    lastResult = { ...json, ...data };
+
+    // Show results
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+
+    // Metrics
+    document.getElementById('r-gross').textContent   = json.gross + '%';
+    document.getElementById('r-net').textContent     = json.net + '%';
+    document.getElementById('r-roi').textContent     = json.roi + '%';
+    document.getElementById('r-monthly').textContent = fmt(json.monthly_rent);
+    document.getElementById('r-annual').textContent  = fmt(json.annual_rent);
+
+    document.getElementById('b-gross').textContent = json.gi + ' ' + json.gr;
+    document.getElementById('b-gross').style.color = json.gc;
+    document.getElementById('b-net').textContent   = json.ni + ' ' + json.nr;
+    document.getElementById('b-net').style.color   = json.nc;
+    document.getElementById('b-roi').textContent   = json.ri + ' ' + json.rr;
+    document.getElementById('b-roi').style.color   = json.rc;
+
+    // Verdicts
+    document.getElementById('verdict-yield-body').innerHTML =
+      `This property offers a <strong>${json.gr.toLowerCase()}</strong> gross rental yield of <strong style="color:var(--cyan)">${json.gross}%</strong>. ${json.gross >= 4.5 ? 'Strong rental income asset for Pakistan market.' : 'Consider negotiating price to improve yield.'}`;
+    document.getElementById('verdict-roi-body').innerHTML =
+      `Total ROI including appreciation is <strong style="color:var(--gold)">${json.roi}%</strong>. ${json.roi >= 6 ? 'Excellent overall return on investment.' : 'Consider higher-yield areas or property types.'}`;
+
+    // Gauges
+    setGauge('gauge-gross-arc', json.gross, 12);
+    setGauge('gauge-net-arc',   json.net,   10);
+    setGauge('gauge-roi-arc',   json.roi,   15);
+    document.getElementById('gauge-gross-num').textContent = json.gross + '%';
+    document.getElementById('gauge-net-num').textContent   = json.net + '%';
+    document.getElementById('gauge-roi-num').textContent   = json.roi + '%';
+
+    // Breakeven
+    document.getElementById('r-breakeven').textContent = json.breakeven + ' years';
+    document.getElementById('r-five').textContent      = fmt(json.five_year);
+    document.getElementById('r-ten').textContent       = fmt(json.ten_year);
+
+  } catch(e) {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    alert('Error: ' + e.message);
+  }
+}
+
+// ── COMPARISON ──
+function addToComparison() {
+  if (!lastResult) return;
+  comparisons.push({
+    label:   lastResult.prop_type + ' | ' + lastResult.city,
+    price:   parseFloat(lastResult.price),
+    gross:   lastResult.gross,
+    net:     lastResult.net,
+    roi:     lastResult.roi,
+    monthly: lastResult.monthly_rent,
+  });
+  renderComparison();
+  showToast('✅ Added to comparison!');
+}
+
+function renderComparison() {
+  if (comparisons.length === 0) {
+    document.getElementById('compare-empty').style.display = 'block';
+    document.getElementById('compare-content').style.display = 'none';
+    return;
+  }
+  document.getElementById('compare-empty').style.display = 'none';
+  document.getElementById('compare-content').style.display = 'block';
+
+  const tbody = document.getElementById('compare-tbody');
+  tbody.innerHTML = comparisons.map((c, i) => `
+    <tr>
+      <td>${c.label}</td>
+      <td>PKR ${c.price.toLocaleString('en-PK')}</td>
+      <td style="color:var(--cyan)">${c.gross}%</td>
+      <td style="color:var(--green)">${c.net}%</td>
+      <td style="color:var(--gold)">${c.roi}%</td>
+      <td style="color:var(--orange)">PKR ${Math.round(c.monthly).toLocaleString('en-PK')}</td>
+    </tr>`).join('');
+
+  // Chart
+  const ctx = document.getElementById('compareChart').getContext('2d');
+  if (compareChart) compareChart.destroy();
+  compareChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: comparisons.map(c => c.label),
+      datasets: [
+        { label: 'Gross Yield %', data: comparisons.map(c => c.gross), backgroundColor: 'rgba(0,212,255,0.7)', borderRadius: 6 },
+        { label: 'Net Yield %',   data: comparisons.map(c => c.net),   backgroundColor: 'rgba(0,255,153,0.7)', borderRadius: 6 },
+        { label: 'ROI %',         data: comparisons.map(c => c.roi),   backgroundColor: 'rgba(255,215,0,0.7)',  borderRadius: 6 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#4a7090', font: { family: 'DM Sans' } } } },
+      scales: {
+        x: { ticks: { color: '#4a7090' }, grid: { color: '#0d1a27' } },
+        y: { ticks: { color: '#4a7090' }, grid: { color: '#0d1a27' } }
+      }
+    }
+  });
+}
+
+function clearComparison() {
+  comparisons = [];
+  renderComparison();
+}
+
+// Init hints
+updateSqft();
+updatePriceHint();
+</script>
+</body>
+</html>
