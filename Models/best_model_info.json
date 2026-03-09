@@ -1,0 +1,67 @@
+{
+  "best_model_name": "Gradient Boosting",
+  "avg_r2": 0.8955,
+  "avg_mae": 9922.083,
+  "per_target": {
+    "gross_rental_yield": {
+      "MAE": 0.2429,
+      "RMSE": 0.3043,
+      "R2": 0.9132,
+      "MAPE": 4.01
+    },
+    "net_rental_yield": {
+      "MAE": 0.1943,
+      "RMSE": 0.2435,
+      "R2": 0.9132,
+      "MAPE": 4.01
+    },
+    "roi_percent": {
+      "MAE": 0.4443,
+      "RMSE": 0.556,
+      "R2": 0.6685,
+      "MAPE": 5.67
+    },
+    "estimated_monthly_rent": {
+      "MAE": 3815.8369,
+      "RMSE": 6267.4698,
+      "R2": 0.9912,
+      "MAPE": 2135.57
+    },
+    "estimated_annual_rent": {
+      "MAE": 45793.6964,
+      "RMSE": 75219.2895,
+      "R2": 0.9912,
+      "MAPE": 2135.57
+    }
+  },
+  "feature_cols": [
+    "price",
+    "area_marla",
+    "area_sqft",
+    "bedrooms",
+    "baths",
+    "price_per_sqft",
+    "price_per_marla",
+    "bath_bed_ratio",
+    "area_per_bedroom",
+    "latitude",
+    "longitude",
+    "location_score",
+    "year",
+    "month",
+    "property_type_encoded",
+    "city_encoded",
+    "province_name_encoded",
+    "locality_encoded",
+    "season_listed_encoded",
+    "size_category_encoded",
+    "price_tier_encoded"
+  ],
+  "target_cols": [
+    "gross_rental_yield",
+    "net_rental_yield",
+    "roi_percent",
+    "estimated_monthly_rent",
+    "estimated_annual_rent"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "features": [
+    "price",
+    "area_marla",
+    "area_sqft",
+    "bedrooms",
+    "baths",
+    "price_per_sqft",
+    "price_per_marla",
+    "bath_bed_ratio",
+    "area_per_bedroom",
+    "latitude",
+    "longitude",
+    "location_score",
+    "year",
+    "month",
+    "property_type_encoded",
+    "city_encoded",
+    "province_name_encoded",
+    "locality_encoded",
+    "season_listed_encoded",
+    "size_category_encoded",
+    "price_tier_encoded"
+  ],
+  "targets": [
+    "gross_rental_yield",
+    "net_rental_yield",
+    "roi_percent",
+    "estimated_monthly_rent",
+    "estimated_annual_rent"
+  ]
+}

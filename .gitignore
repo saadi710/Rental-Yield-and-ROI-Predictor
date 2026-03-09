@@ -1,0 +1,9 @@
+﻿DATA/
+Models/random_forest.pkl
+Models/gradient_boosting.pkl
+Models/decision_tree.pkl
+Models/linear_regression.pkl
+Models/ridge_regression.pkl
+Models/lasso_regression.pkl
+__pycache__/
+*.pyc

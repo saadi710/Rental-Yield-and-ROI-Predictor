@@ -1,0 +1,44 @@
+{
+  "XGBoost_Tuned": {
+    "per_target": {
+      "gross_rental_yield": {
+        "MAE": 0.2425,
+        "RMSE": 0.3035,
+        "R2": 0.9137
+      },
+      "net_rental_yield": {
+        "MAE": 0.194,
+        "RMSE": 0.2428,
+        "R2": 0.9137
+      },
+      "roi_percent": {
+        "MAE": 0.4438,
+        "RMSE": 0.5556,
+        "R2": 0.6691
+      }
+    },
+    "avg_r2": 0.8322,
+    "train_time": 2.61
+  },
+  "LightGBM_Tuned": {
+    "per_target": {
+      "gross_rental_yield": {
+        "MAE": 0.2426,
+        "RMSE": 0.3036,
+        "R2": 0.9137
+      },
+      "net_rental_yield": {
+        "MAE": 0.1942,
+        "RMSE": 0.243,
+        "R2": 0.9136
+      },
+      "roi_percent": {
+        "MAE": 0.4434,
+        "RMSE": 0.5553,
+        "R2": 0.6693
+      }
+    },
+    "avg_r2": 0.8322,
+    "train_time": 1.49
+  }
+}
